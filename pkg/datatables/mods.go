@@ -18,7 +18,7 @@ func DateModFunc(item interface{}, row map[string]interface{}) interface{} {
 			return item
 		}
 
-		unixTime = primitive.DateTime(unixTimeInt64)
+		unixTime = primitive.DateTime(unixTimeInt64 * 1000)
 	}
 
 	tm := unixTime.Time()
