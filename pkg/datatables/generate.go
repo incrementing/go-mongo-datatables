@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-type ValueModFunc func(interface{}) interface{}
+type ValueModFunc func(interface{}, map[string]interface{}) interface{}
 
 type DataTableValue struct {
 	Name    string
@@ -82,12 +82,21 @@ func GenerateDataTable(w http.ResponseWriter, r *http.Request, dt *DataTableEndp
 		// merge values and row into map
 		m := make(map[string]interface{})
 		for i, v := range dt.Values {
-			var value = row[i]
+			// replace . with _ in key
+			key := strings.Replace(v.Name, ".", "_", -1)
+
+			m[key] = row[i]
+		}
+
+		for _, v := range dt.Values {
+			var value = m[strings.Replace(v.Name, ".", "_", -1)]
 			if v.ModFunc != nil {
-				value = v.ModFunc(value)
+				value = v.ModFunc(value, m)
 			}
 
-			m[v.Name] = value
+			key := strings.Replace(v.Name, ".", "_", -1)
+
+			m[key] = value
 		}
 
 		newRow := make([]string, 0)

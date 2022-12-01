@@ -1,15 +1,17 @@
 package datatables
 
 import (
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"strconv"
 )
 
-func DateModFunc(item interface{}) interface{} {
+func DateModFunc(item interface{}, row map[string]interface{}) interface{} {
 	// assert that item to time.Time
 	unixTime, ok := item.(primitive.DateTime)
 	if !ok {
-		panic("item is not a int64")
+		fmt.Println("item is not a time? we accept DateTime and int64")
+		return item
 	}
 
 	tm := unixTime.Time()

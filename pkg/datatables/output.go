@@ -3,6 +3,7 @@ package datatables
 import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"strings"
 )
 
 type DataTable struct {
@@ -31,7 +32,29 @@ func GenerateDataTableOutput(data []primitive.D, totalCount int64, filteredCount
 		}
 
 		for _, field := range query.Fields {
-			rowList = append(rowList, columnMap[field])
+			// split field by .
+			var fieldList = strings.Split(field, ".")
+
+			// get value from map
+			var value = columnMap[fieldList[0]]
+
+			if value == nil {
+				rowList = append(rowList, "")
+				continue
+			}
+
+			for i := 1; i < len(fieldList); i++ {
+				// value is likely to be primitive.D
+				var valueMap = map[string]interface{}{}
+				for _, v := range value.(primitive.D) {
+					valueMap[v.Key] = v.Value
+				}
+
+				value = valueMap[fieldList[i]]
+			}
+
+			// add value to row
+			rowList = append(rowList, value)
 		}
 
 		columnList = append(columnList, rowmod(rowList, query.SearchBy))
