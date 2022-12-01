@@ -18,7 +18,7 @@ type Query struct {
 
 type Filter struct {
 	Field string
-	Value interface{}
+	Value FilterValue
 }
 
 type FilterValue struct {

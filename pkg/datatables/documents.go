@@ -8,6 +8,90 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+func filterValueToInterface(fv FilterValue) interface{} {
+	switch fv.Type {
+	case "string":
+		return fv.Str
+	case "int":
+		return fv.Int
+	case "float":
+		return fv.Float
+	case "bool":
+		return fv.Bool
+	case "int_array":
+		return fv.IntArr
+	case "float_array":
+		return fv.FloatArr
+	case "null":
+		return nil
+	default:
+		return nil
+	}
+}
+
+func addFiltersBson(filters []Filter, currentBson *bson.M) {
+	var fieldList []string
+	var filtered = false
+
+	for _, filter := range filters {
+		filtered = true
+		fieldList = append(fieldList, filter.Field)
+	}
+
+	var andBson []bson.M
+
+	// foreach field, foreach value
+	for _, field := range fieldList {
+		// foreach filter with field
+		var orBson []bson.M
+		for _, filter := range filters {
+			if filter.Field == field {
+				filterInterface := filterValueToInterface(filter.Value)
+
+				// if filter is array of int64, make bson max/min
+				if filter.Value.Type == "int_array" {
+					var min = filterInterface.([]int64)[0]
+					var max = filterInterface.([]int64)[1]
+
+					orBson = append(orBson,
+						bson.M{
+							field: bson.M{
+								"$gte": min,
+								"$lte": max,
+							},
+						})
+				} else if filter.Value.Type == "float_array" {
+					var min = filterInterface.([]float64)[0]
+					var max = filterInterface.([]float64)[1]
+
+					orBson = append(orBson,
+						bson.M{
+							field: bson.M{
+								"$gte": min,
+								"$lte": max,
+							},
+						})
+				} else {
+
+					orBson = append(orBson,
+						bson.M{
+							field: filterInterface,
+						})
+				}
+			}
+		}
+
+		andBson = append(andBson,
+			bson.M{
+				"$or": orBson,
+			})
+	}
+
+	if filtered {
+		(*currentBson)["$and"] = andBson
+	}
+}
+
 // RetrieveDocuments function, used to retrieve documents from the database
 // converts the query to a bson.D object, and then calls the mongo.Collection.Find() function
 func RetrieveDocuments(query *Query, ctx context.Context, db *mongo.Database, searchFields []string) (*Response, error) {
@@ -105,6 +189,8 @@ func RetrieveDocuments(query *Query, ctx context.Context, db *mongo.Database, se
 	if filtered {
 		findBson["$and"] = andBson
 	}
+
+	addFiltersBson(query.Filters, &findBson)
 
 	// execute query
 	cursor, err := collection.Find(ctx, findBson, findOptions)
