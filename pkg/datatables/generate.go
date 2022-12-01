@@ -88,6 +88,8 @@ func GenerateDataTable(w http.ResponseWriter, r *http.Request, dt *DataTableEndp
 			m[key] = row[i]
 		}
 
+		newMap := make(map[string]interface{})
+
 		for i, v := range dt.Values {
 			var value = row[i]
 			if v.ModFunc != nil {
@@ -96,8 +98,10 @@ func GenerateDataTable(w http.ResponseWriter, r *http.Request, dt *DataTableEndp
 
 			key := strings.Replace(v.Name, ".", "_", -1)
 
-			m[key] = value
+			newMap[key] = value
 		}
+
+		m = newMap
 
 		newRow := make([]string, 0)
 
