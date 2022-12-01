@@ -88,8 +88,8 @@ func GenerateDataTable(w http.ResponseWriter, r *http.Request, dt *DataTableEndp
 			m[key] = row[i]
 		}
 
-		for _, v := range dt.Values {
-			var value = m[strings.Replace(v.Name, ".", "_", -1)]
+		for i, v := range dt.Values {
+			var value = row[i]
 			if v.ModFunc != nil {
 				value = v.ModFunc(value, m)
 			}
