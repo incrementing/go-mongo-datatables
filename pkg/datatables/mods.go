@@ -22,13 +22,13 @@ func DateModFunc(item interface{}, row map[string]interface{}) interface{} {
 	}
 
 	tm := unixTime.Time()
-	
+
 	if tm.IsZero() {
 		return struct {
 			Unix      int64
 			Formatted string
 		}{
-			0, "",
+			0, "N/A",
 		}
 	}
 
