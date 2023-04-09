@@ -66,7 +66,7 @@ func GenerateDataTable(w http.ResponseWriter, r *http.Request, dt *DataTableEndp
 
 	// validate scans endpoint
 	if query.TableName != dt.TableName || query.Filters != nil || query.Limit > dt.MaxRows || !reflect.DeepEqual(query.Fields, valueStrings) {
-		http.Error(w, err.Error(), http.StatusForbidden)
+		http.Error(w, errors.New("datatable input does not match schema specified"), http.StatusForbidden)
 		return
 	}
 
