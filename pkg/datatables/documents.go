@@ -29,22 +29,40 @@ func filterValueToInterface(fv FilterValue) interface{} {
 	}
 }
 
-func addFiltersBson(filters []Filter, currentBson *bson.M) {
+func addFiltersBson(query *Query, currentBson *bson.M, searchFields []string) (bool, bool) {
 	var fieldList []string
 	var filtered = false
+	var searched = false
 
-	for _, filter := range filters {
+	for _, filter := range query.Filters {
 		filtered = true
 		fieldList = append(fieldList, filter.Field)
 	}
 
 	var andBson []bson.M
 
+	if query.SearchBy != "" && searchFields != nil {
+		searchBson := bson.M{}
+		filtered = true
+
+		searchBson["$or"] = []bson.M{}
+
+		for _, field := range searchFields {
+			searchBson["$or"] = append(searchBson["$or"].([]bson.M),
+				bson.M{
+					field: primitive.Regex{Pattern: query.SearchBy, Options: "i"},
+				})
+		}
+
+		andBson = append(andBson, searchBson)
+		searched = true
+	}
+
 	// foreach field, foreach value
 	for _, field := range fieldList {
 		// foreach filter with field
 		var orBson []bson.M
-		for _, filter := range filters {
+		for _, filter := range query.Filters {
 			if filter.Field == field {
 				filterInterface := filterValueToInterface(filter.Value)
 
@@ -90,6 +108,8 @@ func addFiltersBson(filters []Filter, currentBson *bson.M) {
 	if filtered {
 		(*currentBson)["$and"] = andBson
 	}
+
+	return filtered, searched
 }
 
 // RetrieveDocuments function, used to retrieve documents from the database
@@ -133,9 +153,6 @@ func RetrieveDocuments(query *Query, ctx context.Context, db *mongo.Database, se
 	findOptions.Sort = orderByBson
 	findOptions.Projection = fieldsBson
 
-	var filteredOrSearched = false
-	var filtered = false
-
 	// generate search bson.M object (unordered)
 	findBson := bson.M{}
 
@@ -143,54 +160,10 @@ func RetrieveDocuments(query *Query, ctx context.Context, db *mongo.Database, se
 	var fieldList []string
 
 	for _, filter := range query.Filters {
-		filtered = true
-		filteredOrSearched = true
 		fieldList = append(fieldList, filter.Field)
 	}
 
-	var andBson []bson.M
-
-	if query.SearchBy != "" && searchFields != nil {
-		searchBson := bson.M{}
-		filteredOrSearched = true
-		filtered = true
-
-		searchBson["$or"] = []bson.M{}
-
-		for _, field := range searchFields {
-			searchBson["$or"] = append(searchBson["$or"].([]bson.M),
-				bson.M{
-					field: primitive.Regex{Pattern: query.SearchBy, Options: "i"},
-				})
-		}
-
-		andBson = append(andBson, searchBson)
-	}
-
-	// foreach field, foreach value
-	for _, field := range fieldList {
-		// foreach filter with field
-		var orBson []bson.M
-		for _, filter := range query.Filters {
-			if filter.Field == field {
-				orBson = append(orBson,
-					bson.M{
-						field: filter,
-					})
-			}
-		}
-
-		andBson = append(andBson,
-			bson.M{
-				"$or": orBson,
-			})
-	}
-
-	if filtered {
-		findBson["$and"] = andBson
-	}
-
-	addFiltersBson(query.Filters, &findBson)
+	filtered, searched := addFiltersBson(query, &findBson, searchFields)
 
 	// execute query
 	cursor, err := collection.Find(ctx, findBson, findOptions)
@@ -208,7 +181,7 @@ func RetrieveDocuments(query *Query, ctx context.Context, db *mongo.Database, se
 	totalCount, err := collection.EstimatedDocumentCount(ctx, nil)
 	var filteredCount = totalCount
 
-	if filteredOrSearched {
+	if filtered || searched {
 		filteredCount, err = collection.CountDocuments(ctx, findBson)
 	}
 

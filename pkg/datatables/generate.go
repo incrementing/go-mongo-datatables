@@ -51,11 +51,12 @@ func HighlightString(haystack, needle string) string {
 	return strings.Replace(haystack, realNeedle, "<span class=\"textHighlighted;\">"+realNeedle+"</span>", -1)
 }
 
-func GenerateDataTable(w http.ResponseWriter, r *http.Request, dt *DataTableEndpoint) {
+func GenerateDataTable(w http.ResponseWriter, r *http.Request, dt *DataTableEndpoint) error {
 	query, err := ProcessDataTableInput(r, dt.TableName)
 	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		log.Error().Err(err).Msg("Error processing datatables input")
-		return
+		return nil
 	}
 
 	// extract value strings from dt.Values
@@ -66,8 +67,8 @@ func GenerateDataTable(w http.ResponseWriter, r *http.Request, dt *DataTableEndp
 
 	// validate scans endpoint
 	if query.TableName != dt.TableName || query.Filters != nil || query.Limit > dt.MaxRows || !reflect.DeepEqual(query.Fields, valueStrings) {
-		http.Error(w, errors.New("datatable input does not match schema specified"), http.StatusForbidden)
-		return
+		http.Error(w, "invalid request", http.StatusBadRequest)
+		return nil
 	}
 
 	query.Filters = append(query.Filters, dt.Filters...)
@@ -75,7 +76,7 @@ func GenerateDataTable(w http.ResponseWriter, r *http.Request, dt *DataTableEndp
 	response, err := RetrieveDocuments(query, dt.Context, dt.Database, dt.SearchValues)
 	if err != nil {
 		log.Error().Err(err).Msg("error retrieving users")
-		return
+		return err
 	}
 
 	output := GenerateDataTableOutput(response.Data, response.Count, response.FilteredCount, query, func(row []interface{}, search string) []string {
@@ -136,6 +137,8 @@ func GenerateDataTable(w http.ResponseWriter, r *http.Request, dt *DataTableEndp
 	_, err = w.Write([]byte(output))
 	if err != nil {
 		log.Error().Err(err).Msg("error writing response")
-		return
+		return err
 	}
+
+	return nil
 }
