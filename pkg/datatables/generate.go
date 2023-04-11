@@ -110,6 +110,7 @@ func GenerateDataTable(w http.ResponseWriter, r *http.Request, dt *DataTableEndp
 		for _, v := range dt.Row {
 			t, err := template.New("row").Parse(v)
 			if err != nil {
+				log.Warn().Err(err).Msg("error parsing template")
 				return nil
 			}
 
