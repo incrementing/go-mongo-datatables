@@ -29,6 +29,7 @@ type FilterValue struct {
 	Bool     bool
 	IntArr   []int64 // used for min and max
 	FloatArr []float64
+	StrArr   []string
 }
 
 type Response struct {

@@ -22,6 +22,8 @@ func filterValueToInterface(fv FilterValue) interface{} {
 		return fv.IntArr
 	case "float_array":
 		return fv.FloatArr
+	case "string_array":
+		return fv.StrArr
 	case "null":
 		return nil
 	default:
