@@ -8,7 +8,6 @@ import (
 	"html"
 	"html/template"
 	"net/http"
-	"reflect"
 	"regexp"
 	"strings"
 )
@@ -66,10 +65,12 @@ func GenerateDataTable(w http.ResponseWriter, r *http.Request, dt *DataTableEndp
 	}
 
 	// validate scans endpoint
-	if query.TableName != dt.TableName || query.Filters != nil || query.Limit > dt.MaxRows || !reflect.DeepEqual(query.Fields, valueStrings) {
+	if query.TableName != dt.TableName || query.Filters != nil || query.Limit > dt.MaxRows {
 		http.Error(w, "invalid request", http.StatusBadRequest)
 		return nil
 	}
+
+	query.Fields = valueStrings
 
 	query.Filters = append(query.Filters, dt.Filters...)
 
