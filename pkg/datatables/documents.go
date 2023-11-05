@@ -36,7 +36,7 @@ func addFiltersBson(query *Query, currentBson *bson.M, searchFields []string) (b
 	var filtered = false
 	var searched = false
 
-	for _, filter := range query.Filters {
+	for _, filter := range query.LegacyFilters {
 		filtered = true
 		fieldList = append(fieldList, filter.Field)
 	}
@@ -64,7 +64,13 @@ func addFiltersBson(query *Query, currentBson *bson.M, searchFields []string) (b
 	for _, field := range fieldList {
 		// foreach filter with field
 		var orBson []bson.M
-		for _, filter := range query.Filters {
+
+		if query.Filters != nil {
+			// add it as a filter (its an interface_
+			orBson = append(orBson, query.Filters)
+		}
+
+		for _, filter := range query.LegacyFilters {
 			if filter.Field == field {
 				filterInterface := filterValueToInterface(filter.Value)
 
@@ -161,7 +167,7 @@ func RetrieveDocuments(query *Query, ctx context.Context, db *mongo.Database, se
 	// TODO: multiple filters on same field using $and or $or
 	var fieldList []string
 
-	for _, filter := range query.Filters {
+	for _, filter := range query.LegacyFilters {
 		fieldList = append(fieldList, filter.Field)
 	}
 

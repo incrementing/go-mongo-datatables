@@ -72,7 +72,7 @@ func GenerateDataTable(w http.ResponseWriter, r *http.Request, dt *DataTableEndp
 
 	query.Fields = valueStrings
 
-	query.Filters = append(query.Filters, dt.Filters...)
+	query.LegacyFilters = append(query.LegacyFilters, dt.Filters...)
 
 	response, err := RetrieveDocuments(query, dt.Context, dt.Database, dt.SearchValues)
 	if err != nil {
