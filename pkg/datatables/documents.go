@@ -65,11 +65,6 @@ func addFiltersBson(query *Query, currentBson *bson.M, searchFields []string) (b
 		// foreach filter with field
 		var orBson []bson.M
 
-		if query.Filters != nil {
-			// add it as a filter (its an interface_
-			orBson = append(orBson, query.Filters)
-		}
-
 		for _, filter := range query.LegacyFilters {
 			if filter.Field == field {
 				filterInterface := filterValueToInterface(filter.Value)
@@ -111,6 +106,11 @@ func addFiltersBson(query *Query, currentBson *bson.M, searchFields []string) (b
 			bson.M{
 				"$or": orBson,
 			})
+	}
+
+	if query.Filters != nil {
+		// add it as a filter (its an interface_
+		andBson = append(andBson, query.Filters)
 	}
 
 	if filtered {
