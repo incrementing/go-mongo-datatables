@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"github.com/rs/zerolog/log"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"html"
 	"html/template"
@@ -28,7 +29,8 @@ type DataTableEndpoint struct {
 	HighlightSearch bool
 	Values          []DataTableValue
 	Row             []string
-	Filters         []Filter
+	LegacyFilters   []Filter
+	Filters         bson.M
 }
 
 func HighlightString(haystack, needle string) string {
@@ -72,7 +74,8 @@ func GenerateDataTable(w http.ResponseWriter, r *http.Request, dt *DataTableEndp
 
 	query.Fields = valueStrings
 
-	query.LegacyFilters = append(query.LegacyFilters, dt.Filters...)
+	query.LegacyFilters = append(query.LegacyFilters, dt.LegacyFilters...)
+	query.Filters = dt.Filters
 
 	response, err := RetrieveDocuments(query, dt.Context, dt.Database, dt.SearchValues)
 	if err != nil {
