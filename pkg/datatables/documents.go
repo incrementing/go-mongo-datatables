@@ -111,6 +111,7 @@ func addFiltersBson(query *Query, currentBson *bson.M, searchFields []string) (b
 	if query.Filters != nil {
 		// add it as a filter (its an interface_
 		andBson = append(andBson, query.Filters)
+		filtered = true
 	}
 
 	if filtered {
