@@ -194,7 +194,9 @@ func RetrieveDocuments(query *Query, ctx context.Context, db *mongo.Database, se
 			"$limit": query.Limit,
 		})
 
-		cursor, err := collection.Aggregate(ctx, limitedAggr)
+		aggrOpts := options.Aggregate().SetAllowDiskUse(true)
+
+		cursor, err := collection.Aggregate(ctx, limitedAggr, aggrOpts)
 		if err != nil {
 			return nil, err
 		}
@@ -213,7 +215,6 @@ func RetrieveDocuments(query *Query, ctx context.Context, db *mongo.Database, se
 		})
 
 		// allow disk use
-		aggrOpts := options.Aggregate().SetAllowDiskUse(true)
 
 		cursor, err = collection.Aggregate(ctx, filteredCountAggr, aggrOpts)
 		if err != nil {
