@@ -217,7 +217,7 @@ func RetrieveDocuments(query *Query, ctx context.Context, db *mongo.Database, se
 			return nil, err
 		}
 
-		var filteredCount int64
+		var filteredCount []bson.M
 		err = cursor.All(ctx, &filteredCount)
 		if err != nil {
 			return nil, err
@@ -227,10 +227,17 @@ func RetrieveDocuments(query *Query, ctx context.Context, db *mongo.Database, se
 			data = []primitive.D{}
 		}
 
+		var filterCountInt int64
+		if len(filteredCount) > 0 {
+			filterCountInt = filteredCount[0]["count"].(int64)
+		} else {
+			filterCountInt = 0
+		}
+
 		var response = &Response{
 			Data:          data,
 			Count:         totalCount,
-			FilteredCount: filteredCount,
+			FilteredCount: filterCountInt,
 		}
 
 		return response, nil
