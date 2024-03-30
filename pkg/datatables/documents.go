@@ -212,7 +212,10 @@ func RetrieveDocuments(query *Query, ctx context.Context, db *mongo.Database, se
 			"$count": "count",
 		})
 
-		cursor, err = collection.Aggregate(ctx, filteredCountAggr)
+		// allow disk use
+		aggrOpts := options.Aggregate().SetAllowDiskUse(true)
+
+		cursor, err = collection.Aggregate(ctx, filteredCountAggr, aggrOpts)
 		if err != nil {
 			return nil, err
 		}
