@@ -174,6 +174,68 @@ func RetrieveDocuments(query *Query, ctx context.Context, db *mongo.Database, se
 
 	filtered, searched := addFiltersBson(query, &findBson, searchFields)
 
+	if query.Aggregation != nil && len(query.Aggregation) > 0 {
+		aggr := query.Aggregation
+		// add match
+		aggr = append(aggr, bson.M{
+			"$match": findBson,
+		})
+
+		// add sort
+		limitedAggr := append(aggr, bson.M{
+			"$sort": orderByBson,
+		})
+
+		// set skip and limit
+		limitedAggr = append(limitedAggr, bson.M{
+			"$skip": query.Offset,
+		})
+		limitedAggr = append(limitedAggr, bson.M{
+			"$limit": query.Offset + query.Limit,
+		})
+
+		cursor, err := collection.Aggregate(ctx, aggr)
+		if err != nil {
+			return nil, err
+		}
+
+		var data []primitive.D
+		err = cursor.All(ctx, &data)
+		if err != nil {
+			return nil, err
+		}
+
+		// get counts
+		totalCount, err := collection.EstimatedDocumentCount(ctx, nil)
+
+		filteredCountAggr := append(aggr, bson.M{
+			"$count": "count",
+		})
+
+		cursor, err = collection.Aggregate(ctx, filteredCountAggr)
+		if err != nil {
+			return nil, err
+		}
+
+		var filteredCount int64
+		err = cursor.All(ctx, &filteredCount)
+		if err != nil {
+			return nil, err
+		}
+
+		if data == nil {
+			data = []primitive.D{}
+		}
+
+		var response = &Response{
+			Data:          data,
+			Count:         totalCount,
+			FilteredCount: filteredCount,
+		}
+
+		return response, nil
+	}
+
 	// execute query
 	cursor, err := collection.Find(ctx, findBson, findOptions)
 	if err != nil {

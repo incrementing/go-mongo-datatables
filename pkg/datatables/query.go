@@ -11,6 +11,7 @@ type Query struct {
 	Fields        []string          `json:"fields"`
 	LegacyFilters []Filter          `json:"legacy_filters"`
 	Filters       bson.M            `json:"filters"`
+	Aggregation   []bson.M          `json:"aggregation"`
 	OrderBy       map[string]bool   `json:"order_by"`
 	Limit         int               `json:"limit"`
 	Offset        int               `json:"offset"`

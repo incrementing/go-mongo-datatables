@@ -31,6 +31,7 @@ type DataTableEndpoint struct {
 	Row             []string
 	LegacyFilters   []Filter
 	Filters         bson.M
+	Aggregation     []bson.M
 }
 
 func HighlightString(haystack, needle string) string {
