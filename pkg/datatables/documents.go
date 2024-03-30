@@ -227,9 +227,9 @@ func RetrieveDocuments(query *Query, ctx context.Context, db *mongo.Database, se
 			data = []primitive.D{}
 		}
 
-		var filterCountInt int64
+		var filterCountInt int32
 		if len(filteredCount) > 0 {
-			filterCountInt = filteredCount[0]["count"].(int64)
+			filterCountInt = filteredCount[0]["count"].(int32)
 		} else {
 			filterCountInt = 0
 		}
@@ -237,7 +237,7 @@ func RetrieveDocuments(query *Query, ctx context.Context, db *mongo.Database, se
 		var response = &Response{
 			Data:          data,
 			Count:         totalCount,
-			FilteredCount: filterCountInt,
+			FilteredCount: int64(filterCountInt),
 		}
 
 		return response, nil
