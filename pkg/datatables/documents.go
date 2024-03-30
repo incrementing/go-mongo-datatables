@@ -194,7 +194,7 @@ func RetrieveDocuments(query *Query, ctx context.Context, db *mongo.Database, se
 			"$limit": query.Offset + query.Limit,
 		})
 
-		cursor, err := collection.Aggregate(ctx, aggr)
+		cursor, err := collection.Aggregate(ctx, limitedAggr)
 		if err != nil {
 			return nil, err
 		}
