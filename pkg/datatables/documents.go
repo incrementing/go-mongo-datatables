@@ -191,7 +191,7 @@ func RetrieveDocuments(query *Query, ctx context.Context, db *mongo.Database, se
 			"$skip": query.Offset,
 		})
 		limitedAggr = append(limitedAggr, bson.M{
-			"$limit": query.Offset + query.Limit,
+			"$limit": query.Limit,
 		})
 
 		cursor, err := collection.Aggregate(ctx, limitedAggr)
