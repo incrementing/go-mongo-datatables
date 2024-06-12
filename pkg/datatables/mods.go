@@ -37,7 +37,7 @@ func DateModFunc(item interface{}, row map[string]interface{}) interface{} {
 		Formatted string
 	}{
 		tm.Unix(),
-		tm.Format("2006-01-02 15:04:05"),
+		tm.Format("01/02/2006 15:04:05"),
 	}
 
 	// format date with nice date format with time
