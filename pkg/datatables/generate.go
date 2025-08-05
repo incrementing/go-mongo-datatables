@@ -3,6 +3,7 @@ package datatables
 import (
 	"bytes"
 	"context"
+	"github.com/a-h/templ"
 	"github.com/rs/zerolog/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -29,7 +30,7 @@ type DataTableEndpoint struct {
 	HighlightSearch bool
 	Values          []DataTableValue
 	GoTemplRow      []string
-	RawRow          []string
+	AhTemplRow      []func(values map[string]interface{}) templ.Component
 	LegacyFilters   []Filter
 	Filters         bson.M
 	Aggregation     []bson.M
@@ -122,16 +123,18 @@ func GenerateDataTable(w http.ResponseWriter, r *http.Request, dt *DataTableEndp
 			}
 
 			var buf bytes.Buffer
-			err = t.Execute(&buf, m)
-
-			if err != nil {
+			if err := t.Execute(&buf, m); err != nil {
 				return nil
 			}
 			newRow = append(newRow, buf.String())
 		}
 
-		for _, v := range dt.RawRow {
-			newRow = append(newRow, v)
+		for _, v := range dt.AhTemplRow {
+			var buf bytes.Buffer
+			if err := v(m).Render(r.Context(), &buf); err != nil {
+				return nil
+			}
+			newRow = append(newRow, buf.String())
 		}
 
 		if dt.HighlightSearch && search != "" {
