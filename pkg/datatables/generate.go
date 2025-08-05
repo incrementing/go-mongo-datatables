@@ -23,12 +23,13 @@ type DataTableValue struct {
 type DataTableEndpoint struct {
 	Database        *mongo.Database
 	Context         context.Context
-	TableName       string
+	Collection      string
 	MaxRows         int
 	SearchValues    []string
 	HighlightSearch bool
 	Values          []DataTableValue
-	Row             []string
+	GoTemplRow      []string
+	RawRow          []string
 	LegacyFilters   []Filter
 	Filters         bson.M
 	Aggregation     []bson.M
@@ -54,7 +55,7 @@ func HighlightString(haystack, needle string) string {
 }
 
 func GenerateDataTable(w http.ResponseWriter, r *http.Request, dt *DataTableEndpoint) error {
-	query, err := ProcessDataTableInput(r, dt.TableName)
+	query, err := ProcessDataTableInput(r, dt.Collection)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		log.Error().Err(err).Msg("Error processing datatables input")
@@ -68,7 +69,7 @@ func GenerateDataTable(w http.ResponseWriter, r *http.Request, dt *DataTableEndp
 	}
 
 	// validate scans endpoint
-	if query.TableName != dt.TableName || query.Filters != nil || query.Limit > dt.MaxRows {
+	if query.Collection != dt.Collection || query.Filters != nil || query.Limit > dt.MaxRows {
 		http.Error(w, "invalid request", http.StatusBadRequest)
 		return nil
 	}
@@ -113,7 +114,7 @@ func GenerateDataTable(w http.ResponseWriter, r *http.Request, dt *DataTableEndp
 		newRow := make([]string, 0)
 
 		// foreach row
-		for _, v := range dt.Row {
+		for _, v := range dt.GoTemplRow {
 			t, err := template.New("row").Parse(v)
 			if err != nil {
 				log.Warn().Err(err).Msg("error parsing template")
@@ -127,6 +128,10 @@ func GenerateDataTable(w http.ResponseWriter, r *http.Request, dt *DataTableEndp
 				return nil
 			}
 			newRow = append(newRow, buf.String())
+		}
+
+		for _, v := range dt.RawRow {
+			newRow = append(newRow, v)
 		}
 
 		if dt.HighlightSearch && search != "" {

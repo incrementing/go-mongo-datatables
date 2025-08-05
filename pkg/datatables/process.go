@@ -12,12 +12,12 @@ type UrlParam struct {
 }
 
 // ProcessDataTableInput processes form data from DataTables, and builds query structure
-func ProcessDataTableInput(r *http.Request, table string) (*Query, error) {
+func ProcessDataTableInput(r *http.Request, collection string) (*Query, error) {
 	query := Query{}
 
 	query.Output = "datatable"
 
-	query.TableName = table
+	query.Collection = collection
 	query.SearchBy = r.FormValue("search[value]")
 
 	if r.FormValue("start") != "" {

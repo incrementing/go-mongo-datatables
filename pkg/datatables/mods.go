@@ -2,7 +2,7 @@ package datatables
 
 import (
 	"fmt"
-	"github.com/josheyr/go-mongo-datatables/pkg/util"
+	"github.com/incrementing/go-mongo-datatables/pkg/util"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 

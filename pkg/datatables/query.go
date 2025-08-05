@@ -7,7 +7,7 @@ import (
 
 // Query structure, used to query the database
 type Query struct {
-	TableName     string            `json:"table_name"`
+	Collection    string            `json:"collection"`
 	Fields        []string          `json:"fields"`
 	LegacyFilters []Filter          `json:"legacy_filters"`
 	Filters       bson.M            `json:"filters"`

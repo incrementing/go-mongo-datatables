@@ -1,4 +1,4 @@
-module github.com/josheyr/go-mongo-datatables
+module github.com/incrementing/go-mongo-datatables
 
 go 1.24.5
 

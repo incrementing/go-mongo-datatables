@@ -124,7 +124,7 @@ func addFiltersBson(query *Query, currentBson *bson.M, searchFields []string) (b
 // RetrieveDocuments function, used to retrieve documents from the database
 // converts the query to a bson.D object, and then calls the mongo.Collection.Find() function
 func RetrieveDocuments(query *Query, ctx context.Context, db *mongo.Database, searchFields []string) (*Response, error) {
-	collection := db.Collection(query.TableName)
+	collection := db.Collection(query.Collection)
 
 	findOptions := options.Find()
 
