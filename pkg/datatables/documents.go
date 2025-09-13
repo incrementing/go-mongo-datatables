@@ -2,6 +2,7 @@ package datatables
 
 import (
 	"context"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -208,7 +209,7 @@ func RetrieveDocuments(query *Query, ctx context.Context, db *mongo.Database, se
 		}
 
 		// get counts
-		totalCount, err := collection.EstimatedDocumentCount(ctx, nil)
+		totalCount, err := collection.CountDocuments(ctx, query.Filters)
 
 		filteredCountAggr := append(aggr, bson.M{
 			"$count": "count",
@@ -260,7 +261,7 @@ func RetrieveDocuments(query *Query, ctx context.Context, db *mongo.Database, se
 	}
 
 	// set totalCount and filtered for pagination
-	totalCount, err := collection.EstimatedDocumentCount(ctx, nil)
+	totalCount, err := collection.CountDocuments(ctx, query.Filters)
 	var filteredCount = totalCount
 
 	if filtered || searched {
