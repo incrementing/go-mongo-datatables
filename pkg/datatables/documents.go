@@ -151,13 +151,19 @@ func RetrieveDocuments(query *Query, ctx context.Context, db *mongo.Database, se
 	}
 
 	// generate filter bson.M object (unordered)
+	var removeId = true
 	fieldsBson := bson.M{}
 	for _, field := range query.Fields {
+		if field == "_id" {
+			removeId = false
+		}
 		fieldsBson[field] = 1
 	}
 
-	// remove _id field from fields
-	fieldsBson["_id"] = 0
+	if removeId {
+		// remove _id field from fields
+		fieldsBson["_id"] = 0
+	}
 
 	// set find options
 	findOptions.Sort = orderByBson
