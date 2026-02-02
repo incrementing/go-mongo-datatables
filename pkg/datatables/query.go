@@ -1,8 +1,7 @@
 package datatables
 
 import (
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 // Query structure, used to query the database
@@ -38,7 +37,7 @@ type FilterValue struct {
 }
 
 type Response struct {
-	Data          []primitive.D
+	Data          []bson.D
 	Count         int64
 	FilteredCount int64
 }

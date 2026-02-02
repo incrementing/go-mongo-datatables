@@ -3,10 +3,9 @@ package datatables
 import (
 	"context"
 
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 func filterValueToInterface(fv FilterValue) interface{} {
@@ -53,7 +52,7 @@ func addFiltersBson(query *Query, currentBson *bson.M, searchFields []string) (b
 		for _, field := range searchFields {
 			searchBson["$or"] = append(searchBson["$or"].([]bson.M),
 				bson.M{
-					field: primitive.Regex{Pattern: query.SearchBy, Options: "i"},
+					field: bson.Regex{Pattern: query.SearchBy, Options: "i"},
 				})
 		}
 
@@ -166,8 +165,8 @@ func RetrieveDocuments(query *Query, ctx context.Context, db *mongo.Database, se
 	}
 
 	// set find options
-	findOptions.Sort = orderByBson
-	findOptions.Projection = fieldsBson
+	findOptions.SetSort(orderByBson)
+	findOptions.SetProjection(fieldsBson)
 
 	// generate search bson.M object (unordered)
 	findBson := bson.M{}
@@ -208,7 +207,7 @@ func RetrieveDocuments(query *Query, ctx context.Context, db *mongo.Database, se
 			return nil, err
 		}
 
-		var data []primitive.D
+		var data []bson.D
 		err = cursor.All(ctx, &data)
 		if err != nil {
 			return nil, err
@@ -235,7 +234,7 @@ func RetrieveDocuments(query *Query, ctx context.Context, db *mongo.Database, se
 		}
 
 		if data == nil {
-			data = []primitive.D{}
+			data = []bson.D{}
 		}
 
 		var filterCountInt int32
@@ -260,7 +259,7 @@ func RetrieveDocuments(query *Query, ctx context.Context, db *mongo.Database, se
 		return nil, err
 	}
 
-	var data []primitive.D
+	var data []bson.D
 	err = cursor.All(ctx, &data)
 	if err != nil {
 		return nil, err
@@ -275,7 +274,7 @@ func RetrieveDocuments(query *Query, ctx context.Context, db *mongo.Database, se
 	}
 
 	if data == nil {
-		data = []primitive.D{}
+		data = []bson.D{}
 	}
 
 	var response = &Response{

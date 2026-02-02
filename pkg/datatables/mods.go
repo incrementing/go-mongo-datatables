@@ -2,14 +2,15 @@ package datatables
 
 import (
 	"fmt"
+
 	"github.com/incrementing/go-mongo-datatables/pkg/util"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 func DateModFunc(format string) func(item interface{}, row map[string]interface{}) interface{} {
 	return func(item interface{}, row map[string]interface{}) interface{} {
 		// assert that item to time.Time
-		unixTime, ok := item.(primitive.DateTime)
+		unixTime, ok := item.(bson.DateTime)
 		if !ok {
 			// if it's not a primitive.DateTime, it might be a int64
 			unixTimeInt64, ok := item.(int64)
@@ -18,7 +19,7 @@ func DateModFunc(format string) func(item interface{}, row map[string]interface{
 				return item
 			}
 
-			unixTime = primitive.DateTime(unixTimeInt64 * 1000)
+			unixTime = bson.DateTime(unixTimeInt64 * 1000)
 		}
 
 		tm := unixTime.Time()

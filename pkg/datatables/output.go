@@ -2,8 +2,9 @@ package datatables
 
 import (
 	"encoding/json"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"strings"
+
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 type DataTable struct {
@@ -15,7 +16,7 @@ type DataTable struct {
 type rodModFunc func([]interface{}, string) []string
 
 // GenerateDataTableOutput generates a json DataTable output from mongo docs, with filtered and total records
-func GenerateDataTableOutput(data []primitive.D, totalCount int64, filteredCount int64, query *Query, rowmod rodModFunc) string {
+func GenerateDataTableOutput(data []bson.D, totalCount int64, filteredCount int64, query *Query, rowmod rodModFunc) string {
 	var dataTable DataTable
 
 	// foreach value in data, add to array
@@ -46,7 +47,7 @@ func GenerateDataTableOutput(data []primitive.D, totalCount int64, filteredCount
 			for i := 1; i < len(fieldList); i++ {
 				// value is likely to be primitive.D
 				var valueMap = map[string]interface{}{}
-				for _, v := range value.(primitive.D) {
+				for _, v := range value.(bson.D) {
 					valueMap[v.Key] = v.Value
 				}
 
