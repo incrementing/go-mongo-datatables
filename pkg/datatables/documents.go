@@ -121,6 +121,15 @@ func addFiltersBson(query *Query, currentBson *bson.M, searchFields []string) (b
 	return filtered, searched
 }
 
+func hasSortKey(sort bson.D, key string) bool {
+	for _, e := range sort {
+		if e.Key == key {
+			return true
+		}
+	}
+	return false
+}
+
 // RetrieveDocuments function, used to retrieve documents from the database
 // converts the query to a bson.D object, and then calls the mongo.Collection.Find() function
 func RetrieveDocuments(query *Query, ctx context.Context, db *mongo.Database, searchFields []string) (*Response, error) {
@@ -137,8 +146,15 @@ func RetrieveDocuments(query *Query, ctx context.Context, db *mongo.Database, se
 	// Generate orderBy bson.D object (ordered)
 	orderByBson := bson.D{}
 
+	// endpoint sort goes first, then whatever the table asked for
+	orderByBson = append(orderByBson, query.Sort...)
+
 	// foreach in findOptions.OrderBy
 	for _, order := range query.OrderBy {
+		if hasSortKey(query.Sort, order.Field) {
+			continue
+		}
+
 		var orderByInt = 1
 		if order.Desc {
 			orderByInt = -1

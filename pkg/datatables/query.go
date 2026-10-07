@@ -11,6 +11,7 @@ type Query struct {
 	LegacyFilters []Filter          `json:"legacy_filters"`
 	Filters       bson.M            `json:"filters"`
 	Aggregation   []bson.M          `json:"aggregation"`
+	Sort          bson.D            `json:"sort"`
 	OrderBy       []Order           `json:"order_by"`
 	Limit         int               `json:"limit"`
 	Offset        int               `json:"offset"`

@@ -34,6 +34,7 @@ type DataTableEndpoint struct {
 	LegacyFilters   []Filter
 	Filters         bson.M
 	Aggregation     []bson.M
+	Sort            bson.D
 }
 
 func HighlightString(haystack, needle string) string {
@@ -80,6 +81,7 @@ func GenerateDataTable(w http.ResponseWriter, r *http.Request, dt *DataTableEndp
 	query.LegacyFilters = append(query.LegacyFilters, dt.LegacyFilters...)
 	query.Filters = dt.Filters
 	query.Aggregation = dt.Aggregation
+	query.Sort = dt.Sort
 
 	response, err := RetrieveDocuments(query, dt.Context, dt.Database, dt.SearchValues)
 	if err != nil {
