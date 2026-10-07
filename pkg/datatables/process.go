@@ -67,8 +67,6 @@ func ProcessDataTableInput(r *http.Request, collection string) (*Query, error) {
 		i++
 	}
 
-	query.OrderBy = make(map[string]bool)
-
 	i = 0
 	for {
 		if r.FormValue("order["+fmt.Sprint(i)+"][column]") == "" {
@@ -85,7 +83,10 @@ func ProcessDataTableInput(r *http.Request, collection string) (*Query, error) {
 			i++
 			continue
 		}
-		query.OrderBy[query.Fields[column]] = r.FormValue("order["+fmt.Sprint(i)+"][dir]") == "desc"
+		query.OrderBy = append(query.OrderBy, Order{
+			Field: query.Fields[column],
+			Desc:  r.FormValue("order["+fmt.Sprint(i)+"][dir]") == "desc",
+		})
 		i++
 	}
 

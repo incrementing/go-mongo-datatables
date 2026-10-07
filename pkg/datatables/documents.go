@@ -138,15 +138,15 @@ func RetrieveDocuments(query *Query, ctx context.Context, db *mongo.Database, se
 	orderByBson := bson.D{}
 
 	// foreach in findOptions.OrderBy
-	for field, desc := range query.OrderBy {
+	for _, order := range query.OrderBy {
 		var orderByInt = 1
-		if desc == true {
+		if order.Desc {
 			orderByInt = -1
 		}
 
 		// append to bsonD
 		orderByBson = append(orderByBson,
-			bson.E{Key: field, Value: orderByInt})
+			bson.E{Key: order.Field, Value: orderByInt})
 	}
 
 	// generate filter bson.M object (unordered)
