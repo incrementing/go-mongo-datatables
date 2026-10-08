@@ -11,13 +11,19 @@ type Query struct {
 	LegacyFilters []Filter          `json:"legacy_filters"`
 	Filters       bson.M            `json:"filters"`
 	Aggregation   []bson.M          `json:"aggregation"`
-	OrderBy       map[string]bool   `json:"order_by"`
+	Sort          bson.D            `json:"sort"`
+	OrderBy       []Order           `json:"order_by"`
 	Limit         int               `json:"limit"`
 	Offset        int               `json:"offset"`
 	SearchBy      string            `json:"search_by"`
 	Searches      map[string]string `json:"search_fields"`
 	Output        string            `json:"output"`
 	Download      bool              `json:"download"`
+}
+
+type Order struct {
+	Field string
+	Desc  bool
 }
 
 type Filter struct {
